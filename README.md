@@ -14,9 +14,7 @@
 
 链接格式为 https://wh.meituan.com/meishi/c17/，
 具体页面如下图所示，
-![image](image/美团页面图.png){
- width: 100%;
-}
+![image](image/美团页面图.png){width: 50%;}
 
 我们需要右击网页，检查源码（或者按 F12），在网络中找到 Ajax 请求，如下图所示
 ![image](image/Ajax请求.png)
