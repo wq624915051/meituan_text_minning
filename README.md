@@ -13,3 +13,6 @@
 ### 1. 构造网页爬取美团店铺的专属ID
 
 链接格式为 https://wh.meituan.com/meishi/c17/
+
+![1.png]
+
