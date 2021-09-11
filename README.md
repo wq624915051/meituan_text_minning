@@ -17,11 +17,14 @@
 <img src=image/美团页面图.png width=60% />
 
 我们需要右击网页，检查源码（或者按 F12），在网络中找到 Ajax 请求，如下图所示
+
 <img src=image/Ajax请求.png width=60% />
 
 可以发现 链接格式为 "https://wh.meituan.com/meishi/api/poi/getPoiList?cityName=武汉&cateId=17&areaId=0&sort=&dinnerCountAttrId=&page=1&userId=625054939&uuid=b6ab093ca7c44cebac42.1631346296.1.0.0&platform=1&partner=126&originUrl=https://wh.meituan.com/meishi/c17/&riskLevel=1&optimusCode=10&\_token=eJx1T8uSokAQ/Je+StjNqwEj9iCCPAZRHER0Yg6gjYACIg24s7H/vj0R7mEPe8qsrMyMql/g4ZzBjEdIQ4gDA3mAGeCnaIoBB2jHNljkRUkRBVERMQdO/2qqzELpIzLA7EPCmFME4fNb2LL5g5dZQsXSJ/eiAqOCxH0DSB1mATml924G4ZhPK1LQPqmnp6aCjHd5AU+8AtkZ/zEB1lKFrIXh9YXJC+nfecXeYRVdcakZI+4YlSG/fhrzICeTn/lugO5StoP47SlcGhfF1rwI/c6zHMVqNN12LA8tl2MbIvtet1lNlc0iKPNTFiW6ZXSHxWHr1OokQC6EsJpAEbs+SVbnBaKqtD+Sa7G7CH6rRfe9ZiZeMJh7dRxoVq0muPHfbZmuLO+m31rzyqe3fhfsvt5ie/44Emxuzsd0PNRlLko0Mlq/i7HWhENvkz4/F1402BCNfJ2l6dfaGfZS38S61JPnqIedkV7mnblGj3Jb+ge/k30raW+bTCTrdwH9AL//AAtCmBA="，
 十分繁琐的网页URL，因此我们需要拆分网页URL，可以发发现网页参数如下图所示：
+
 <img src=image/Ajax参数.png width=60% />
+
 我们利用python构造参数，拼接完整的网页URL，进行爬取，部分代码展示：
 ```python
 def get_store(page, token):
@@ -59,7 +62,8 @@ def get_store(page, token):
         print('爬取第 %s 页商铺信息出错'%page)
 ```
 
-这样可以获得所有店铺的详细信息
+这样可以获得所有店铺的详细信息。
+
 ### 2. 通过店铺ID，获取店铺的评论信息
 第一步可以爬取到每个商家的专属ID，例如 六婆串串香 这家店，点击商家详情，可以发现网页跳转到 https://wh.meituan.com/meishi/5151532/ 其中 5151532 就属于这家店铺的专属ID，这一信息通过上一步爬取已经获得，利用专属ID可以拼接URL，得到每家商铺的网址，由此可以爬取每家店铺的评论信息。
 部分代码展示如下：
@@ -105,3 +109,40 @@ def store_comment(poiid, page, cookie):
     except Exception as e:
          return '出错'
 ```
+
+### 3. 连接数据库将数据保存到数据库中
+
+我们使用MYSQL数据库，安装教程参考[菜鸟教程](http://www.runoob.com/mysql/mysql-install.html)，python连接MYSQL数据推荐使用pymysql，同样是推荐菜鸟教程[菜鸟教程](http://www.runoob.com/python3/python3-mysql.html)。我们需要先建立一个数据库和表，然后连接并定义游标，然后写对应的sql语句，最后执行事务，存储部分的代码如下：
+
+``` python
+#连接MYSQL数据库
+config = {
+          'host':'localhost',
+          'port':3306,
+          'user':'root',
+          'password':'',
+          'database':'data',
+          'charset':'utf8mb4',
+        }
+db = pymysql.connect(**config)
+cursor = db.cursor()
+
+#在数据库建表
+def creat_table():
+    cursor.execute("DROP TABLE IF EXISTS meituan")
+    sql = '''CREATE TABLE meituan(
+            评论店铺  varchar(100),
+            评论用户姓名 varchar(100),
+            评论用户id varchar(100),
+            评论用户星级 varchar(55),
+            评论用户菜品 varchar(100),
+            评论用户内容 text(5000),
+            评论时间 varchar(55)
+            );'''
+    cursor.execute(sql)
+    return
+```
+
+## 2. 探索性分析
+
+## 3. 情感分析
