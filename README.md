@@ -4,6 +4,58 @@
 
 **涉及美团的店铺详情介绍抓取、店铺的评论抓取，以及后续的文本处理清洗，建模情感分析**
 
+## 难点（反爬虫对抗）：
+
+1. **cookie时效性的问题**： 爬取评论时大概爬取二十页左右，可能就出现检测信息，利用 selenium 自动登录美团，重新获取 cookies，载入到请求头中
+    ``` python
+    chromeoption = webdriver.ChromeOptions()
+    chromeoption.add_argument(random.choice(user_agent))
+    chromeoption.add_argument("--headless")
+    chromeoption.add_experimental_option('excludeSwitches',
+                                            ['enable-automation'])
+    driver = webdriver.Chrome(executable_path=(r'chromedriver.exe'), chrome_options=chromeoption)
+    driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        "source": """
+        Object.defineProperty(navigator, 'webdriver', {
+            get: () => undefined
+        })
+        """
+    })
+    driver.get('https://passport.meituan.com/account/unitivelogin')
+    time.sleep(random.randint(0,4))
+    account_box = driver.find_element_by_id('login-email')
+   ``` 
+
+2. **修改请求头中浏览器信息**：使用fake_useragent第三方库，修改request中的headers参数，用法如下：
+
+   ``` python
+   from fake_useragent import UserAgent
+   ua = UserAgent()
+   headers = {'User-Agent':ua.random}
+   ```
+
+3. **设置跳转路径**：在访问评论时，一般的浏览行为是从某一页跳转到下一页这样的，而不是直接通过连接访问，为了更好的伪装成一个正常的访问，我们需要设置一下跳转的路径，修改headers中的Referer参数
+
+   ``` python 
+   headers = {
+           'User-Agent':ua.random,
+           'Cookie': cookie ,
+           'Referer': 'https://wh.meituan.com/meishi/c17/'
+   }
+   ```
+
+4. **使用IP代理池**：这里使用西刺代理的免费代理，构建一个爬虫爬取西刺代理的ip，然后进行验证，筛掉不可用的ip，构建出ip池供后续调用，代码来自网络。但是经过测试，大众点评对一个账号不同ip访问监控非常严格，使用IP代理池不更换账号的话，死的更快，封你账号，然而构建账号池比较麻烦，我们先暂缓。
+
+5. **降低爬取频率**：一个简单又有效的方法就是降低爬取频率，毕竟高频率的爬取对服务器也是一个考验，如果对速度的要求不是很高的话，建议把频率放慢一点，你好我好大家好！
+
+   ``` python
+   import random
+   import time
+   time.sleep(6*random.random() + 4)
+   ```
+
+6. **设置断点续传**：即使降低了爬取频率，有时还是会被美团的网络工程师抓到的，小哥哥饶命啊~。因此我们需要一个断点续传的小功能，避免每次都从头开始爬。思路是建一个文本文件，存储当前爬取的进度，每次运行程序时都出当前进度开始，详见代码~
+
 ## 一、爬虫
 
 ### 整体思路
