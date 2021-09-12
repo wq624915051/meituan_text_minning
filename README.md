@@ -226,7 +226,7 @@ def creat_table():
    ``` python
    #中文分词
    import jieba
-   data['cus_comment'] = data['cus_comment'].apply(lambda x:' '.join(jieba.cut(x)))
+   meituan['评论用户内容'] = meituan['评论用户内容'].apply(lambda x: ' '.join(jieba.cut(x)))
    #其次利用隐函数删除文本中的空格 换行符
    # 正则中 /s 代表匹配任何空白字符，包括空格、制表符、换页符等等。等价于 [ \f\n\r\t\v]。注意 Unicode 正则表达式会匹配全角空格符。
    meituan['评论用户内容'].replace('\s+','',regex=True,inplace=True)
